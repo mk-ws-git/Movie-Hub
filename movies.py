@@ -66,7 +66,7 @@ def list_movies():
     """Print all movies in the database along with their ratings and year."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
-        print(f"{RED}No movies in the database.{RESET}")
+        print(f"{ACTIVE_USER_NAME}, your movie collection is empty.")
         return
 
     print(f"\n{len(movies)} movies in total:\n")
@@ -317,17 +317,15 @@ def filter_movies():
 
 
 def generate_website():
-  """Generate _static/index.html from _static/index_template.html."""
+  """Generate a user-specific HTML page from _static/index_template.html."""
   movies = storage.list_movies(ACTIVE_USER_ID)
-  if not movies:
-    print(f"{RED}No movies in the database.{RESET}")
-    return
 
   base_dir = os.path.dirname(os.path.abspath(__file__))
   static_dir = os.path.join(base_dir, "_static")
 
   template_path = os.path.join(static_dir, "index_template.html")
-  output_path = os.path.join(static_dir, f"{ACTIVE_USER_NAME}.html")
+  safe_name = ACTIVE_USER_NAME.strip().replace(" ", "_")
+  output_path = os.path.join(static_dir, f"{safe_name}.html")
 
   try:
     with open(template_path, "r", encoding="utf-8") as f:
@@ -337,19 +335,20 @@ def generate_website():
     return
 
   movie_items = []
-  for title, info in movies.items():
-    year = info.get("year", "")
-    poster_url = info.get("poster") or info.get("poster_url") or ""
 
-    movie_items.append(
-        "        <li>\n"
-        '            <div class="movie">\n'
-        f'                <img class="movie-poster" src="{poster_url}"/>\n'
-        f'                <div class="movie-title">{title}</div>\n'
-        f'                <div class="movie-year">{year}</div>\n'
-        "            </div>\n"
-        "        </li>\n"
-        )
+  for title, info in movies.items():
+      year = info.get("year", "")
+      poster_url = info.get("poster_url") or ""
+
+      movie_items.append(
+          "        <li>\n"
+          '            <div class="movie">\n'
+          f'                <img class="movie-poster" src="{poster_url}"/>\n'
+          f'                <div class="movie-title">{title}</div>\n'
+          f'                <div class="movie-year">{year}</div>\n'
+          "            </div>\n"
+          "        </li>\n"
+      )
 
   movie_grid_html = "".join(movie_items)
 
@@ -362,7 +361,7 @@ def generate_website():
   with open(output_path, "w", encoding="utf-8") as f:
     f.write(html)
 
-  print(f"Website was generated successfully: {ACTIVE_USER_NAME}.html")
+  print(f"Website was generated successfully: {safe_name}.html")
 
 
 def switch_user():
