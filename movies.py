@@ -2,6 +2,7 @@ import movie_storage.movie_storage_sql as storage
 import random
 import matplotlib.pyplot as plt
 import os
+import config
 
 RESET = "\033[0m"
 RED = "\033[31m"
@@ -79,7 +80,7 @@ def add_movie():
         return
 
     try:
-        storage.add_movie(title)
+        storage.add_movie(ACTIVE_USER_ID, title)
     except ValueError as e:
         print(f"{RED}Movie not found: {e}{RESET}")
     except ConnectionError as e:
@@ -101,7 +102,7 @@ def delete_movie():
         return
 
     if title in movies:
-        storage.delete_movie(title)
+        storage.delete_movie(ACTIVE_USER_ID, title)
         print(f"{title} has been deleted.")
     else:
         print(f"{RED}Error: Movie does not exist.{RESET}")
@@ -142,7 +143,7 @@ def update_movie():
         except ValueError:
             print(f"{RED}Invalid year. Please enter a valid number.{RESET}")
 
-    storage.update_movie(title, year, rating)
+    storage.update_movie(ACTIVE_USER_ID, title, year, rating)
     print(f"Movie '{title}' successfully updated to rating {rating} ({year}).")
 
 
@@ -351,7 +352,7 @@ def generate_website():
 
   movie_grid_html = "".join(movie_items)
 
-  html = template.replace("__TEMPLATE_TITLE__", "🎬 Movie Hub")
+  html = template.replace("__TEMPLATE_TITLE__", config.APP_TITLE)
   html = html.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
 
   with open(output_path, "w", encoding="utf-8") as f:
