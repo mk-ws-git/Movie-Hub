@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, text
 import config
 
 # Database URL + key
-DB_URL = "sqlite:///movies.db"
+DB_URL = "sqlite:///data/movies.db"
 api_key = config.OMDB_API_KEY
 if not api_key:
     raise RuntimeError("Missing OMDB_API_KEY env var. Set it before running.")
@@ -37,6 +37,8 @@ def _init_db():
             )
         """))
         connection.commit()
+
+_init_db()
 
 
 # Fetch Data from OMDb API and store in DB
@@ -79,6 +81,38 @@ def _fetch_from_omdb(title: str) -> dict:
         "rating": rating,
         "poster_url": poster_url
     }
+
+def list_users():
+    """Return all users as a list of dicts: [{'id': 1, 'name': 'Sara'}, ...]."""
+    with engine.connect() as connection:
+        rows = connection.execute(
+            text("SELECT id, name FROM users ORDER BY name ASC")
+        ).fetchall()
+
+    return [{"id": r[0], "name": r[1]} for r in rows]
+
+
+def create_user(name: str) -> int:
+    """Create a new user (or return existing user id)."""
+    name = name.strip()
+    if not name:
+        raise ValueError("User name cannot be empty.")
+
+    with engine.connect() as connection:
+        # Try insert (ignore if already exists)
+        connection.execute(
+            text("INSERT OR IGNORE INTO users (name) VALUES (:name)"),
+            {"name": name}
+        )
+        connection.commit()
+
+        # Fetch id
+        user_id = connection.execute(
+            text("SELECT id FROM users WHERE name = :name"),
+            {"name": name}
+        ).scalar_one()
+
+    return user_id
 
 
 def list_movies():
