@@ -115,59 +115,72 @@ def create_user(name: str) -> int:
     return user_id
 
 
-def list_movies():
-    """Retrieve all movies from the database."""
+def list_movies(user_id: int):
+    """Retrieve all movies for a specific user."""
     with engine.connect() as connection:
-        result = connection.execute(text("SELECT title, year, rating, poster_url FROM movies"))
-        movies = result.fetchall()
+        rows = connection.execute(
+            text("""
+                SELECT title, year, rating, poster_url
+                FROM movies
+                WHERE user_id = :uid
+            """),
+            {"uid": user_id}
+        ).fetchall()
 
-    return {row[0]: {"year": row[1], "rating": row[2], "poster_url": row[3]} for row in movies}
+    return {r[0]: {"year": r[1], "rating": r[2], "poster_url": r[3]} for r in rows}
 
 
-def add_movie(title: str):
-    """Add a movie by title (fetches year/rating/poster from OMDb)."""
-    info = _fetch_from_omdb(title)  # may raise ValueError / ConnectionError
+def add_movie(user_id, title):
+    info = _fetch_from_omdb(title)
 
     with engine.connect() as connection:
         try:
             connection.execute(
                 text("""
-                    INSERT INTO movies (title, year, rating, poster_url)
-                    VALUES (:title, :year, :rating, :poster_url)
+                    INSERT INTO movies (user_id, title, year, rating, poster_url)
+                    VALUES (:user_id, :title, :year, :rating, :poster_url)
                 """),
-                info
+                {
+                    "user_id": user_id,
+                    "title": info["title"],
+                    "year": info["year"],
+                    "rating": info["rating"],
+                    "poster_url": info["poster_url"],
+                }
             )
             connection.commit()
             print(f"Movie '{info['title']}' added successfully.")
-        except Exception as e:
-            print(f"Error: {e}")
+        except Exception:
+            print(f"Movie '{info['title']}' already exists for this user.")
 
 
-def delete_movie(title):
-    """Delete a movie from the database."""
+def delete_movie(user_id, title):
     with engine.connect() as connection:
         result = connection.execute(
-            text("DELETE FROM movies WHERE title = :title"),
-            {"title": title}
+            text("DELETE FROM movies WHERE user_id = :uid AND title = :title"),
+            {"uid": user_id, "title": title}
         )
         connection.commit()
 
-        if result.rowcount == 0:
-            print(f"Movie '{title}' not found.")
-        else:
-            print(f"Movie '{title}' deleted successfully.")
+    if result.rowcount == 0:
+        print(f"Movie '{title}' not found for this user.")
+    else:
+        print(f"Movie '{title}' deleted successfully.")
 
 
-def update_movie(title, year, rating):
-    """Update a movie's rating and year in the database."""
+def update_movie(user_id, title, year, rating):
     with engine.connect() as connection:
         result = connection.execute(
-            text("UPDATE movies SET rating = :rating, year = :year WHERE title = :title"),
-            {"title": title, "year": year, "rating": rating}
+            text("""
+                UPDATE movies
+                SET year = :year, rating = :rating
+                WHERE user_id = :uid AND title = :title
+            """),
+            {"uid": user_id, "title": title, "year": year, "rating": rating}
         )
         connection.commit()
 
-        if result.rowcount == 0:
-            print(f"Movie '{title}' not found.")
-        else:
-            print(f"Movie '{title}' updated successfully.")
+    if result.rowcount == 0:
+        print(f"Movie '{title}' not found for this user.")
+    else:
+        print(f"Movie '{title}' updated successfully.")
