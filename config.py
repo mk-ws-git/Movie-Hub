@@ -1,7 +1,7 @@
 import os
 
 # Application
-APP_TITLE = "🎬 Movie Hub"
+APP_TITLE = "Movie Hub"
 
 # Database
 DB_FILENAME = "movies.sqlite3"

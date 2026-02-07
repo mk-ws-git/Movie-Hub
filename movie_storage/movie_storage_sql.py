@@ -1,10 +1,13 @@
 import os
 import requests
 from sqlalchemy import create_engine, text
+import config
 
 # Database URL + key
 DB_URL = "sqlite:///movies.db"
-os.environ.setdefault("OMDB_API_KEY", "cc1c26c3")
+api_key = config.OMDB_API_KEY
+if not api_key:
+    raise RuntimeError("Missing OMDB_API_KEY env var. Set it before running.")
 
 # Create the engine
 engine = create_engine(DB_URL, echo=True)
@@ -36,7 +39,7 @@ _init_db()
 
 # Fetch Data from OMDb API and store in DB
 def _fetch_from_omdb(title: str) -> dict:
-    api_key = os.getenv("OMDB_API_KEY")
+    api_key = config.OMDB_API_KEY
     if not api_key:
         raise RuntimeError("Missing OMDB_API_KEY env var. Set it before running.")
 
@@ -79,10 +82,10 @@ def _fetch_from_omdb(title: str) -> dict:
 def list_movies():
     """Retrieve all movies from the database."""
     with engine.connect() as connection:
-        result = connection.execute(text("SELECT title, year, rating FROM movies"))
+        result = connection.execute(text("SELECT title, year, rating, poster_url FROM movies"))
         movies = result.fetchall()
 
-    return {row[0]: {"year": row[1], "rating": row[2]} for row in movies}
+    return {row[0]: {"year": row[1], "rating": row[2], "poster_url": row[3]} for row in movies}
 
 
 def add_movie(title: str):

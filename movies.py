@@ -1,4 +1,4 @@
-import movie_storage_sql as storage
+import movie_storage.movie_storage_sql as storage
 import random
 import matplotlib.pyplot as plt
 import os
@@ -52,7 +52,7 @@ def add_movie():
         return
 
     try:
-        storage.add_movie(title)  # now only title
+        storage.add_movie(title)
     except ValueError as e:
         print(f"{RED}Movie not found: {e}{RESET}")
     except ConnectionError as e:
