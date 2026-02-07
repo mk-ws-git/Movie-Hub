@@ -327,7 +327,7 @@ def generate_website():
   static_dir = os.path.join(base_dir, "_static")
 
   template_path = os.path.join(static_dir, "index_template.html")
-  output_path = os.path.join(static_dir, "index.html")
+  output_path = os.path.join(static_dir, f"{ACTIVE_USER_NAME}.html")
 
   try:
     with open(template_path, "r", encoding="utf-8") as f:
@@ -353,13 +353,16 @@ def generate_website():
 
   movie_grid_html = "".join(movie_items)
 
-  html = template.replace("__TEMPLATE_TITLE__", config.APP_TITLE)
+  html = template.replace(
+      "__TEMPLATE_TITLE__",
+      f"{ACTIVE_USER_NAME}'s {config.APP_TITLE}"
+  )
   html = html.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
 
   with open(output_path, "w", encoding="utf-8") as f:
     f.write(html)
 
-  print("Website was generated successfully.")
+  print(f"Website was generated successfully: {ACTIVE_USER_NAME}.html")
 
 
 def switch_user():
