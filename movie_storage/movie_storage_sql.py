@@ -15,26 +15,28 @@ engine = create_engine(DB_URL, echo=True)
 # Create the movies db
 def _init_db():
     with engine.connect() as connection:
+        # Users table
+        connection.execute(text("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL
+            )
+        """))
+
+        # Movies table (user_id included)
         connection.execute(text("""
             CREATE TABLE IF NOT EXISTS movies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT UNIQUE NOT NULL,
+                user_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
                 year INTEGER NOT NULL,
                 rating REAL NOT NULL,
-                poster_url TEXT
+                poster_url TEXT,
+                UNIQUE(user_id, title),
+                FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """))
         connection.commit()
-
-    with engine.connect() as connection:
-        cols = connection.execute(text("PRAGMA table_info(movies)")).fetchall()
-        col_names = {c[1] for c in cols}
-        if "poster_url" not in col_names:
-            connection.execute(text("ALTER TABLE movies ADD COLUMN poster_url TEXT"))
-            connection.commit()
-
-
-_init_db()
 
 
 # Fetch Data from OMDb API and store in DB
