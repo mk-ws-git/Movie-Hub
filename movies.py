@@ -54,6 +54,7 @@ def show_menu():
         " 10. Movies sorted by year\n"
         " 11. Filter movies\n"
         " 12. Generate website\n"
+        " 13. Switch user\n"
         f"{RESET}"
     )
 
@@ -361,6 +362,12 @@ def generate_website():
   print("Website was generated successfully.")
 
 
+def switch_user():
+    global ACTIVE_USER_ID, ACTIVE_USER_NAME
+    ACTIVE_USER_ID, ACTIVE_USER_NAME = select_user()
+    print(f"\nActive user: {ACTIVE_USER_NAME}\n")
+
+
 def main():
     """Run the movie database application."""
     print("\n********** My Movie Database **********")
@@ -382,12 +389,13 @@ def main():
         "9": create_histogram,
         "10": sort_movies_by_year,
         "11": filter_movies,
-        "12": generate_website
+        "12": generate_website,
+        "13": switch_user
     }
 
     while True:
         show_menu()
-        choice = input(f"{GREEN}Enter choice (0-12): {RESET}").strip()
+        choice = input(f"{GREEN}Enter choice (0-13): {RESET}").strip()
 
         if choice == "0":
           raise SystemExit
