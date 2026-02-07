@@ -324,7 +324,7 @@ def generate_website():
 
   movie_grid_html = "".join(movie_items)
 
-  html = template.replace("__TEMPLATE_TITLE__", "Movie Hub")
+  html = template.replace("__TEMPLATE_TITLE__", "🎬 Movie Hub")
   html = html.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
 
   with open(output_path, "w", encoding="utf-8") as f:
