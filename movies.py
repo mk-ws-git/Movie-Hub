@@ -8,6 +8,33 @@ RED = "\033[31m"
 GREEN = "\033[32m"
 CYAN = "\033[36m"
 
+ACTIVE_USER_ID = None
+ACTIVE_USER_NAME = None
+
+def select_user():
+    users = storage.list_users()
+
+    print("\nWelcome to Movie Hub!\n")
+    if users:
+        print("Select a user:")
+        for i, u in enumerate(users, start=1):
+            print(f" {i}. {u['name']}")
+        print(f" {len(users) + 1}. Create new user\n")
+
+        choice = input("Enter choice: ").strip()
+        if choice.isdigit():
+            idx = int(choice)
+            if 1 <= idx <= len(users):
+                u = users[idx - 1]
+                return u["id"], u["name"]
+            if idx == len(users) + 1:
+                name = input("Enter new user name: ").strip()
+                uid = storage.create_user(name)
+                return uid, name
+
+    name = input("No users found. Create your first user name: ").strip()
+    uid = storage.create_user(name)
+    return uid, name
 
 def show_menu():
     """Display the main menu with available user actions."""
@@ -35,7 +62,7 @@ def exit_app():
 
 def list_movies():
     """Print all movies in the database along with their ratings and year."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
         return
@@ -63,7 +90,7 @@ def add_movie():
 
 def delete_movie():
     """Delete an existing movie from the database."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies to delete.{RESET}")
         return
@@ -82,7 +109,7 @@ def delete_movie():
 
 def update_movie():
     """Update the rating and year of an existing movie with validation."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies to update.{RESET}")
         return
@@ -121,7 +148,7 @@ def update_movie():
 
 def show_stats():
     """Calculate and display statistics about movie ratings."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
         return
@@ -148,7 +175,7 @@ def show_stats():
 
 def random_movie():
     """Select and display a random movie from the database."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
         return
@@ -159,7 +186,7 @@ def random_movie():
 
 def search_movie():
     """Search for movies containing a user-provided search term."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     term = input(f"{GREEN}Enter part of movie name: {RESET}").lower()
     if not term:
         print(f"{RED}Search term cannot be empty.{RESET}")
@@ -177,7 +204,7 @@ def search_movie():
 
 def sort_movies_by_rating():
     """Display movies sorted by rating in descending order."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
         return
@@ -188,7 +215,7 @@ def sort_movies_by_rating():
 
 def create_histogram():
     """Create and save a histogram of movie ratings."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
         return
@@ -208,7 +235,7 @@ def create_histogram():
 
 def sort_movies_by_year():
     """Display movies sorted by year."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
         return
@@ -230,7 +257,7 @@ def sort_movies_by_year():
 
 def filter_movies():
     """Filter movies based on minimum rating, start year, and end year."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
         return
@@ -289,7 +316,7 @@ def filter_movies():
 
 def generate_website():
   """Generate _static/index.html from _static/index_template.html."""
-  movies = storage.list_movies()
+  movies = storage.list_movies(ACTIVE_USER_ID)
   if not movies:
     print(f"{RED}No movies in the database.{RESET}")
     return
@@ -336,6 +363,10 @@ def generate_website():
 def main():
     """Run the movie database application."""
     print("\n********** My Movie Database **********")
+
+    global ACTIVE_USER_ID, ACTIVE_USER_NAME
+    ACTIVE_USER_ID, ACTIVE_USER_NAME = select_user()
+    print(f"\nActive user: {ACTIVE_USER_NAME}\n")
 
     actions = {
         "0": exit_app,
