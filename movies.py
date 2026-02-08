@@ -12,6 +12,7 @@ CYAN = "\033[36m"
 ACTIVE_USER_ID = None
 ACTIVE_USER_NAME = None
 
+
 def select_user():
     users = storage.list_users()
 
@@ -37,8 +38,8 @@ def select_user():
     uid = storage.create_user(name)
     return uid, name
 
+
 def show_menu():
-    """Display the main menu with available user actions."""
     print(
         f"{CYAN}Menu:\n"
         " 0.  Exit\n"
@@ -58,12 +59,12 @@ def show_menu():
         f"{RESET}"
     )
 
+
 def exit_app():
-  raise SystemExit
+    raise SystemExit
 
 
 def list_movies():
-    """Display all movies for the active user."""
     movies = storage.list_movies(ACTIVE_USER_ID)
 
     if not movies:
@@ -71,7 +72,6 @@ def list_movies():
         return
 
     print(f"\n{ACTIVE_USER_NAME}'s Movies ({len(movies)} total):\n")
-
     for title, info in movies.items():
         year = info.get("year", "N/A")
         rating = info.get("rating", "N/A")
@@ -95,7 +95,6 @@ def add_movie():
 
 
 def delete_movie():
-    """Delete an existing movie from the database."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies to delete.{RESET}")
@@ -114,7 +113,6 @@ def delete_movie():
 
 
 def update_movie():
-    """Update the rating and year of an existing movie with validation."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies to update.{RESET}")
@@ -135,8 +133,7 @@ def update_movie():
             rating = float(rating_input)
             if 0 <= rating <= 10:
                 break
-            else:
-                print(f"{RED}Rating must be between 0 and 10.{RESET}")
+            print(f"{RED}Rating must be between 0 and 10.{RESET}")
         except ValueError:
             print(f"{RED}Invalid rating. Please enter a number between 0 and 10.{RESET}")
 
@@ -153,7 +150,6 @@ def update_movie():
 
 
 def show_stats():
-    """Calculate and display statistics about movie ratings."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
@@ -180,7 +176,6 @@ def show_stats():
 
 
 def random_movie():
-    """Select and display a random movie from the database."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
@@ -191,7 +186,6 @@ def random_movie():
 
 
 def search_movie():
-    """Search for movies containing a user-provided search term."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     term = input(f"{GREEN}Enter part of movie name: {RESET}").lower()
     if not term:
@@ -209,7 +203,6 @@ def search_movie():
 
 
 def sort_movies_by_rating():
-    """Display movies sorted by rating in descending order."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
@@ -220,13 +213,16 @@ def sort_movies_by_rating():
 
 
 def create_histogram():
-    """Create and save a histogram of movie ratings."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
         return
 
-    filename = input(f"{GREEN}Enter filename (e.g. ratings.png): {RESET}")
+    filename = input(f"{GREEN}Enter filename (e.g. ratings.png): {RESET}").strip()
+    if not filename:
+        print(f"{RED}Filename cannot be empty.{RESET}")
+        return
+
     ratings = [info["rating"] for info in movies.values()]
 
     plt.hist(ratings, bins=10, edgecolor="black")
@@ -240,7 +236,6 @@ def create_histogram():
 
 
 def sort_movies_by_year():
-    """Display movies sorted by year."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
@@ -250,11 +245,9 @@ def sort_movies_by_year():
         order = input(f"{GREEN}Do you want to see the latest movies first? (y/n): {RESET}").strip().lower()
         if order in ("y", "n"):
             break
-        else:
-            print(f"{RED}Invalid input. Please enter 'y' or 'n'.{RESET}")
+        print(f"{RED}Invalid input. Please enter 'y' or 'n'.{RESET}")
 
-    reverse = True if order == "y" else False
-
+    reverse = (order == "y")
     sorted_movies = sorted(movies.items(), key=lambda x: x[1]["year"], reverse=reverse)
 
     for title, info in sorted_movies:
@@ -262,7 +255,6 @@ def sort_movies_by_year():
 
 
 def filter_movies():
-    """Filter movies based on minimum rating, start year, and end year."""
     movies = storage.list_movies(ACTIVE_USER_ID)
     if not movies:
         print(f"{RED}No movies in the database.{RESET}")
@@ -277,8 +269,7 @@ def filter_movies():
             min_rating = float(min_rating_input)
             if 0 <= min_rating <= 10:
                 break
-            else:
-                print(f"{RED}Rating must be between 0 and 10.{RESET}")
+            print(f"{RED}Rating must be between 0 and 10.{RESET}")
         except ValueError:
             print(f"{RED}Invalid rating. Please enter a number between 0 and 10.{RESET}")
 
@@ -306,14 +297,14 @@ def filter_movies():
 
     filtered = []
     for title, info in movies.items():
-        rating_ok = min_rating is None or info["rating"] >= min_rating
-        start_ok = start_year is None or info["year"] >= start_year
-        end_ok = end_year is None or info["year"] <= end_year
+        rating_ok = (min_rating is None) or (info["rating"] >= min_rating)
+        start_ok = (start_year is None) or (info["year"] >= start_year)
+        end_ok = (end_year is None) or (info["year"] <= end_year)
         if rating_ok and start_ok and end_ok:
             filtered.append((title, info["year"], info["rating"]))
 
     if filtered:
-        print(f"\nFiltered Movies:")
+        print("\nFiltered Movies:")
         for title, year, rating in filtered:
             print(f"{title} ({year}): {rating}")
     else:
@@ -321,7 +312,6 @@ def filter_movies():
 
 
 def generate_website():
-    """Generate a user-specific HTML page from _static/index_template.html."""
     movies = storage.list_movies(ACTIVE_USER_ID)
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -333,53 +323,59 @@ def generate_website():
 
     try:
         with open(template_path, "r", encoding="utf-8") as f:
-            html = f.read()
+            template = f.read()
     except FileNotFoundError:
         print(f"{RED}Error: _static/index_template.html not found.{RESET}")
         return
 
     welcome_title = f"Welcome back, {ACTIVE_USER_NAME}."
-
-    if movies:
-        welcome_subtitle = "Browse your movie collection:"
-    else:
-        welcome_subtitle = "Your movie collection is empty."
-
-    movie_items = []
+    welcome_subtitle = (
+        "Browse your movie collection:" if movies else "Your movie collection is empty."
+    )
 
     if not movies:
-        movie_grid_html = """
-            <li class="empty-state">
-                <h2>Your movie collection is empty</h2>
-            </li>
-            """
+        movie_grid_html = '<li class="empty-state"></li>'
     else:
+        items = []
         for title, info in movies.items():
-            movie_items.append(f"""
-                <li class="movie-item">
-                    <div class="movie-card">
-                        <span class="rating-badge">{info["rating"]}</span>
-                        <img class="movie-poster" src="{info["poster_url"]}">
-                    </div>
+            rating = info.get("rating", 0)
+            try:
+                rating_str = f"{float(rating):.1f}"
+            except (TypeError, ValueError):
+                rating_str = str(rating)
 
-                    <div class="movie-meta">
-                        <div class="movie-title">{title}</div>
-                        <div class="movie-year">{info["year"]}</div>
-                    </div>
-                </li>
-                """)
+            poster_url = info.get("poster_url") or ""
+            year = info.get("year", "")
+            imdb_id = info.get("imdb_id")
+            imdb_url = f"https://www.imdb.com/title/{imdb_id}/" if imdb_id else "#"
 
-        movie_grid_html = "".join(movie_items)
+            items.append(f"""
+    <li class="movie-item">
+      <div class="movie-card">
+        <span class="rating-badge">{rating_str}</span>
+        <a href="{imdb_url}" target="_blank" rel="noopener noreferrer">
+          <img class="movie-poster" src="{poster_url}" alt="{title}">
+        </a>
+      </div>
+      <div class="movie-meta">
+        <div class="movie-title">{title}</div>
+        <div class="movie-year">{year}</div>
+      </div>
+    </li>
+    """)
+        movie_grid_html = "".join(items)
 
+    html = template
     html = html.replace("__TEMPLATE_TITLE__", config.APP_TITLE)
-    html = html.replace("__WELCOME_TITLE__", welcome_title)
-    html = html.replace("__WELCOME_SUBTITLE__", welcome_subtitle)
+    html = html.replace("__TEMPLATE_WELCOME_TITLE__", welcome_title)
+    html = html.replace("__TEMPLATE_WELCOME_SUBTITLE__", welcome_subtitle)
     html = html.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print(f"Website was generated successfully: {safe_name}.html")
+    print(f"Website was generated successfully: {ACTIVE_USER_NAME}.html")
+
 
 def switch_user():
     global ACTIVE_USER_ID, ACTIVE_USER_NAME
@@ -388,8 +384,7 @@ def switch_user():
 
 
 def main():
-    """Run the movie database application."""
-    print("\n********** My Movie Database **********")
+    print("\n********** movie hub **********")
 
     global ACTIVE_USER_ID, ACTIVE_USER_NAME
     ACTIVE_USER_ID, ACTIVE_USER_NAME = select_user()
@@ -409,7 +404,7 @@ def main():
         "10": sort_movies_by_year,
         "11": filter_movies,
         "12": generate_website,
-        "13": switch_user
+        "13": switch_user,
     }
 
     while True:
@@ -417,8 +412,7 @@ def main():
         choice = input(f"{GREEN}Enter choice (0-13): {RESET}").strip()
 
         if choice == "0":
-          raise SystemExit
-
+            raise SystemExit
         elif choice in actions:
             actions[choice]()
             input(f"{GREEN}\nPress enter to return to menu {RESET}")

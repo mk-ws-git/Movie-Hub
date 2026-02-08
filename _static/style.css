@@ -8,8 +8,7 @@ body {
 .banner {
   position: relative;
   width: 100%;
-  height: 275px;
-  background: #e1e2e6;
+  height: 250px;
   overflow: visible;
   z-index: 1;
 }
@@ -19,30 +18,31 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
+
   position: relative;
+  z-index: 2;
 }
 
-/* BLEND BANNER TO BODY */
 .banner::after {
   content: "";
   position: absolute;
-  z-index: 0;
   left: 0;
   right: 0;
 
-  height: 300px;
-  bottom: -300px;
+  bottom: -220px;
+  height: 220px;
+
+  z-index: 1;
 
   background: linear-gradient(
     to bottom,
-    rgba(225, 226, 230, 1) 0%,
-    rgba(225, 226, 230, 0.85) 30%,
-    rgba(244, 244, 246, 0.55) 75%,
-    rgba(244, 244, 246, 1) 100%
+    rgba(210, 212, 218, 1) 0%,
+    rgba(225, 226, 230, 0.85) 40%,
+    rgba(225, 226, 230, 0.4) 70%,
+    rgba(225, 226, 230, 0) 100%
   );
 
-  filter: blur(8px);
-  transform: translateY(-10px);
+  filter: blur(6px);
   pointer-events: none;
 }
 
@@ -52,20 +52,20 @@ body {
   left: 1%;
   z-index: 2;
   color: white;
-  font-size: 6em;
+  font-size: 7em;
   font-weight: 900;
+  text-transform: lowercase;
 }
 
 .welcome-bar {
   position: relative;
   z-index: 3;
-  margin-top: 60px;
-  margin-left: 20px;
+  padding-left: 25px;
+  margin-top: 50px;
 }
 
 .welcome-title {
   margin: 0;
-  left: 15px;
   font-size: 2rem;
   font-weight: 700;
   color: black;
@@ -73,7 +73,7 @@ body {
 
 .welcome-subtitle {
   margin-top: 7px;
-  left: 15px;
+  margin-bottom: 0;
   font-size: 1.2rem;
   font-weight: 400;
   color: dimgrey;
@@ -83,6 +83,7 @@ body {
 .scroll-wrapper {
   position: relative;
   z-index: 4;
+  margin-top: 10px;
 }
 
 .movie-grid {
@@ -96,9 +97,11 @@ body {
 
   scrollbar-width: none;
 }
+
 .movie-grid::-webkit-scrollbar {
   display: none;
 }
+
 .movie-grid li {
   flex: 0 0 auto;
 }
@@ -119,18 +122,26 @@ body {
   right: 0;
 }
 
+/* Movie cards */
+
+.movie-item {
+  width: 140px;
+  flex: 0 0 auto;
+}
+
 .movie-card {
   position: relative;
-  width: 150px;
-  height: 215px;
+  border-radius: 5px;
+  width: 140px;
+  overflow: visible;
 }
 
 .movie-poster {
-  width: 100%;
-  height: 100%;
+  width: 140px;
+  height: 210px;
+
   border-radius: 5px;
   object-fit: cover;
-  display: block;
 
   box-shadow:
     0 4px 10px rgba(0, 0, 0, 0.18),
@@ -141,48 +152,48 @@ body {
   position: absolute;
   top: -10px;
   right: -10px;
-  z-index: 2;
+  z-index: 5;
 
   padding: 6px 10px;
   border-radius: 999px;
 
-  font-weight: 700;
+  font-weight: bold;
   font-size: 13px;
-  line-height: 1;
 
   background: blue;
   color: white;
 
-  pointer-events: none;
+  box-shadow: none;
 }
 
-/* Keep meta text below; no background box */
+.movie-meta {
+  margin-top: 6px;
+}
+
 .movie-title {
   margin-top: 10px;
-  font-size: 0.85em;
-  text-align: center;
+  font-size: 0.9em;
+  font-weight: 600;
+  text-align: left;
   color: #2b2b2b;
+
+  max-width: 140px;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .movie-year {
+  margin-top: 3px;
   font-size: 0.75em;
-  text-align: center;
-  color: #777;
+  text-align: left;
+  color: #6e6e6e;
+  padding-left: 2px;
 }
 
 .empty-state {
-  grid-column: 1 / -1;
-  text-align: center;
+  width: 100%;
+  min-height: 220px;
   padding: 4rem 2rem;
   margin: 0 auto;
-}
-
-.empty-state h2 {
-  font-size: 1.6rem;
-  margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-  color: #666;
-  font-size: 1rem;
 }
