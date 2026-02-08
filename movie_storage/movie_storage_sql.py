@@ -2,14 +2,13 @@ import requests
 from sqlalchemy import create_engine, text
 import config
 
-# Database URL + key
+# API and Database
 DB_URL = "sqlite:///data/movies.db"
+engine = create_engine(DB_URL, connect_args={"check_same_thread": False})
 api_key = config.OMDB_API_KEY
 if not api_key:
     raise RuntimeError("Missing OMDB_API_KEY env var. Set it before running.")
 
-# Create the engine
-engine = create_engine(DB_URL, echo=True)
 
 def _init_db():
     """Generate users and movies tables if they don't exist."""
@@ -42,10 +41,6 @@ _init_db()
 
 def _fetch_from_omdb(title: str) -> dict:
     """ Fetch Data from OMDb API and store in DB """
-    api_key = config.OMDB_API_KEY
-    if not api_key:
-        raise RuntimeError("Missing OMDB_API_KEY env var. Set it before running.")
-
     url = "https://www.omdbapi.com/"
     params = {"t": title, "apikey": api_key}
 
@@ -82,29 +77,6 @@ def _fetch_from_omdb(title: str) -> dict:
         "imdb_id": imdb_id
     }
 
-def backfill_imdb_ids(user_id: int):
-    """Fill imdb_id for existing movies that are missing it."""
-    with engine.connect() as connection:
-        rows = connection.execute(text("""
-            SELECT title
-            FROM movies
-            WHERE user_id = :user_id AND (imdb_id IS NULL OR imdb_id = '')
-        """), {"user_id": user_id}).fetchall()
-
-    for (title,) in rows:
-        info = _fetch_from_omdb(title)
-        with engine.connect() as connection:
-            connection.execute(text("""
-                UPDATE movies
-                SET imdb_id = :imdb_id
-                WHERE user_id = :user_id AND title = :title
-            """), {
-                "imdb_id": info["imdb_id"],
-                "user_id": user_id,
-                "title": title,
-            })
-            connection.commit()
-
 
 def list_users():
     """Return all users as a list of dicts."""
@@ -140,36 +112,27 @@ def create_user(name: str) -> int:
 
 
 def list_movies(user_id: int):
-    """Retrieve all movies for a specific user."""
+    """Return all movies for a specific user as a dict keyed by title."""
     with engine.connect() as connection:
-        result = connection.execute(
+        rows = connection.execute(
             text("""
                 SELECT title, year, rating, poster_url, imdb_id
                 FROM movies
                 WHERE user_id = :user_id
+                ORDER BY title ASC
             """),
             {"user_id": user_id}
-        )
+        ).fetchall()
 
-        rows = result.fetchall()
-
-    movies = {}
-
-    for row in rows:
-        title = row[0]
-        year = row[1]
-        rating = row[2]
-        poster_url = row[3]
-        imdb_id = row[4]
-
-        movies[title] = {
+    return {
+        title: {
             "year": year,
             "rating": rating,
             "poster_url": poster_url,
             "imdb_id": imdb_id,
         }
-
-    return movies
+        for title, year, rating, poster_url, imdb_id in rows
+    }
 
 
 def add_movie(user_id, title):
