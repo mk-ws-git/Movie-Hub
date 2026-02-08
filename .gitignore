@@ -12,3 +12,11 @@ venv/
 
 # Database
 *.sqlite3
+
+# local databases
+*.db
+data/*.db
+
+# generated websites
+_static/*.html
+!_static/index_template.html
