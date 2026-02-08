@@ -14,3 +14,11 @@ OMDB_API_KEY = os.getenv("OMDB_API_KEY", "")
 STATIC_DIR = "_static"
 TEMPLATE_FILE = "index_template.html"
 OUTPUT_HTML = "index.html"
+
+# User Interface (movies in list)
+WELCOME_TITLE = "Welcome back, {ACTIVE_USER_NAME}."
+WELCOME_SUBTITLE = "Browse your movie collection:"
+
+# User Interface (no movies in list)
+WELCOME_TITLE = "Welcome back, {ACTIVE_USER_NAME}."
+WELCOME_SUBTITLE = "Browse your movie collection:"

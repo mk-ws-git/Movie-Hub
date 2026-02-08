@@ -16,7 +16,7 @@ ACTIVE_USER_NAME = None
 def select_user():
     users = storage.list_users()
 
-    print("\nWelcome to Movie Hub!\n")
+    print("\nWelcome to movie hub!\n")
     if users:
         print("Select a user:")
         for i, u in enumerate(users, start=1):
