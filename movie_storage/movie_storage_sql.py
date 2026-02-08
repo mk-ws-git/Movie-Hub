@@ -1,4 +1,3 @@
-import os
 import requests
 from sqlalchemy import create_engine, text
 import config
@@ -13,6 +12,7 @@ if not api_key:
 engine = create_engine(DB_URL, echo=True)
 
 def _init_db():
+    """Generate users and movies tables if they don't exist."""
     with engine.connect() as connection:
         connection.execute(text("""
             CREATE TABLE IF NOT EXISTS users (
@@ -29,25 +29,19 @@ def _init_db():
                 year INTEGER,
                 rating REAL NOT NULL,
                 poster_url TEXT,
+                imdb_id TEXT,
                 UNIQUE(user_id, title),
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )
         """))
+
         connection.commit()
-
-        # --- migrations (add columns if missing) ---
-        cols = connection.execute(text("PRAGMA table_info(movies)")).fetchall()
-        col_names = {c[1] for c in cols}
-
-        if "imdb_id" not in col_names:
-            connection.execute(text("ALTER TABLE movies ADD COLUMN imdb_id TEXT"))
-            connection.commit()
 
 _init_db()
 
 
-# Fetch Data from OMDb API and store in DB
 def _fetch_from_omdb(title: str) -> dict:
+    """ Fetch Data from OMDb API and store in DB """
     api_key = config.OMDB_API_KEY
     if not api_key:
         raise RuntimeError("Missing OMDB_API_KEY env var. Set it before running.")
@@ -65,7 +59,6 @@ def _fetch_from_omdb(title: str) -> dict:
     if data.get("Response") != "True":
         raise ValueError(data.get("Error", "Movie not found"))
 
-    # Parse fields
     api_title = data.get("Title", "").strip()
     year_str = str(data.get("Year", "")).strip()
     poster_url = data.get("Poster", None)
@@ -114,7 +107,7 @@ def backfill_imdb_ids(user_id: int):
 
 
 def list_users():
-    """Return all users as a list of dicts: [{'id': 1, 'name': 'Sara'}, ...]."""
+    """Return all users as a list of dicts."""
     with engine.connect() as connection:
         rows = connection.execute(
             text("SELECT id, name FROM users ORDER BY name ASC")
