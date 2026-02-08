@@ -336,21 +336,28 @@ def generate_website():
 
   movie_items = []
 
-  for title, info in movies.items():
-      year = info.get("year", "")
-      poster_url = info.get("poster_url") or ""
-
-      movie_items.append(
-          "        <li>\n"
-          '            <div class="movie">\n'
-          f'                <img class="movie-poster" src="{poster_url}"/>\n'
-          f'                <div class="movie-title">{title}</div>\n'
-          f'                <div class="movie-year">{year}</div>\n'
-          "            </div>\n"
-          "        </li>\n"
+  if not movies:
+      movie_grid_html = (
+          '        <li class="empty-state">\n'
+          f'            <h2>{ACTIVE_USER_NAME}, your movie collection is empty.</h2>\n'
+          '        </li>\n'
       )
+  else:
+      for title, info in movies.items():
+          year = info.get("year", "")
+          poster_url = info.get("poster_url") or ""
 
-  movie_grid_html = "".join(movie_items)
+          movie_items.append(
+              "        <li>\n"
+              '            <div class="movie">\n'
+              f'                <img class="movie-poster" src="{poster_url}"/>\n'
+              f'                <div class="movie-title">{title}</div>\n'
+              f'                <div class="movie-year">{year}</div>\n'
+              "            </div>\n"
+              "        </li>\n"
+          )
+
+      movie_grid_html = "".join(movie_items)
 
   html = template.replace(
       "__TEMPLATE_TITLE__",
