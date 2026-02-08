@@ -1,9 +1,15 @@
 import requests
 from sqlalchemy import create_engine, text
 import config
+import os
 
 # API and Database
-DB_URL = "sqlite:///data/movies.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(BASE_DIR)                  
+DATA_DIR = os.path.join(PROJECT_DIR, "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+
+DB_URL = f"sqlite:///{os.path.join(DATA_DIR, 'movies.db')}"
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False})
 api_key = config.OMDB_API_KEY
 if not api_key:
