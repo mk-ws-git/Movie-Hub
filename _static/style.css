@@ -12,18 +12,46 @@ body {
   font-size: 16pt;
 }
 
+/* Horizontal scrolling */
 .movie-grid {
-  list-style-type: none;
-  padding: 0;
+  list-style: none;
+  padding: 20px;
   margin: 0;
-  margin-top: 20px;
   display: flex;
-  justify-content: center;
+  gap: 20px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+
+  scrollbar-width: none;
+}
+.movie-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .movie-grid li {
-  padding: 10px 15px;
-  text-align: left;
+  flex: 0 0 auto;
+}
+
+.scroll-wrapper {
+  position: relative;
+}
+
+.scroll-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 10;
+}
+
+.scroll-zone.left {
+  left: 0;
+}
+
+.scroll-zone.right {
+  right: 0;
 }
 
 .movie {
