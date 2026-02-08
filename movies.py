@@ -344,12 +344,14 @@ def generate_website():
       )
   else:
       for title, info in movies.items():
+          rating = f"{info.get('rating', 0):.1f}"
           year = info.get("year", "")
           poster_url = info.get("poster_url") or ""
 
           movie_items.append(
               "        <li>\n"
               '            <div class="movie">\n'
+              f'                <div class="rating-badge">{rating}</div>\n'
               f'                <img class="movie-poster" src="{poster_url}"/>\n'
               f'                <div class="movie-title">{title}</div>\n'
               f'                <div class="movie-year">{year}</div>\n'
