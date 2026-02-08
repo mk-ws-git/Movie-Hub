@@ -4,13 +4,52 @@
     <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-<div class="list-movies-title">
-    <h1>__TEMPLATE_TITLE__</h1>
+<div class="banner">
+  <img src="imgs/banner.png" alt="Movie Hub banner">
+  <div class="banner-title">
+    __TEMPLATE_TITLE__
+  </div>
 </div>
-<div>
-    <ol class="movie-grid">
-__TEMPLATE_MOVIE_GRID__
-    </ol>
+<div class="welcome-bar">
+  <h2 class="welcome-title">__WELCOME_TITLE__</h2>
+  <h3 class="welcome-subtitle">__WELCOME_SUBTITLE__</h3>
 </div>
+<div class="scroll-wrapper">
+  <div class="scroll-zone left"></div>
+
+  <ul class="movie-grid" id="movieGrid">
+    __TEMPLATE_MOVIE_GRID__
+  </ul>
+
+  <div class="scroll-zone right"></div>
+</div>
+<script>
+  const grid = document.getElementById("movieGrid");
+  let scrollInterval = null;
+
+  function startScroll(speed) {
+    stopScroll();
+    scrollInterval = setInterval(() => {
+      grid.scrollLeft += speed;
+    }, 16); // ~60fps
+  }
+
+  function stopScroll() {
+    if (scrollInterval) {
+      clearInterval(scrollInterval);
+      scrollInterval = null;
+    }
+  }
+
+  document.querySelector(".scroll-zone.left")
+    .addEventListener("mouseenter", () => startScroll(-12));
+  document.querySelector(".scroll-zone.right")
+    .addEventListener("mouseenter", () => startScroll(12));
+
+  document.querySelector(".scroll-zone.left")
+    .addEventListener("mouseleave", stopScroll);
+  document.querySelector(".scroll-zone.right")
+    .addEventListener("mouseleave", stopScroll);
+</script>
 </body>
 </html>
