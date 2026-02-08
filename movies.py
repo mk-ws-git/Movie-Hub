@@ -321,66 +321,65 @@ def filter_movies():
 
 
 def generate_website():
-  """Generate a user-specific HTML page from _static/index_template.html."""
-  movies = storage.list_movies(ACTIVE_USER_ID)
+    """Generate a user-specific HTML page from _static/index_template.html."""
+    movies = storage.list_movies(ACTIVE_USER_ID)
 
-  base_dir = os.path.dirname(os.path.abspath(__file__))
-  static_dir = os.path.join(base_dir, "_static")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    static_dir = os.path.join(base_dir, "_static")
 
-  template_path = os.path.join(static_dir, "index_template.html")
-  safe_name = ACTIVE_USER_NAME.strip().replace(" ", "_")
-  output_path = os.path.join(static_dir, f"{safe_name}.html")
+    template_path = os.path.join(static_dir, "index_template.html")
+    safe_name = ACTIVE_USER_NAME.strip().replace(" ", "_")
+    output_path = os.path.join(static_dir, f"{safe_name}.html")
 
-  try:
-    with open(template_path, "r", encoding="utf-8") as f:
-      template = f.read()
-  except FileNotFoundError:
-    print(f"{RED}Error: _static/index_template.html not found.{RESET}")
-    return
+    try:
+        with open(template_path, "r", encoding="utf-8") as f:
+            html = f.read()
+    except FileNotFoundError:
+        print(f"{RED}Error: _static/index_template.html not found.{RESET}")
+        return
 
-  movie_items = []
+    welcome_title = f"Welcome back, {ACTIVE_USER_NAME}."
 
-  if not movies:
-      movie_grid_html = (
-          '        <li class="empty-state">\n'
-          f'            <h2>{ACTIVE_USER_NAME}, your movie collection is empty.</h2>\n'
-          '        </li>\n'
-      )
-  else:
-      for title, info in movies.items():
-          year = info.get("year", "")
-          poster_url = info.get("poster_url") or ""
-          rating = info.get("rating", 0.0)
+    if movies:
+        welcome_subtitle = "Browse your movie collection:"
+    else:
+        welcome_subtitle = "Your movie collection is empty."
 
-          imdb_id = info.get("imdb_id")
-          imdb_url = f"https://www.imdb.com/title/{imdb_id}/" if imdb_id else "#"
+    movie_items = []
 
-          movie_items.append(
-              "        <li>\n"
-              '            <div class="movie">\n'
-              f'                <div class="rating-badge">{rating:.1f}</div>\n'
-              f'                <a href="{imdb_url}" target="_blank" rel="noopener noreferrer">\n'
-              f'                    <img class="movie-poster" src="{poster_url}" alt="{title} poster"/>\n'
-              "                </a>\n"
-              f'                <div class="movie-title">{title}</div>\n'
-              f'                <div class="movie-year">{year}</div>\n'
-              "            </div>\n"
-              "        </li>\n"
-          )
+    if not movies:
+        movie_grid_html = """
+            <li class="empty-state">
+                <h2>Your movie collection is empty</h2>
+            </li>
+            """
+    else:
+        for title, info in movies.items():
+            movie_items.append(f"""
+                <li class="movie-item">
+                    <div class="movie-card">
+                        <span class="rating-badge">{info["rating"]}</span>
+                        <img class="movie-poster" src="{info["poster_url"]}">
+                    </div>
 
-      movie_grid_html = "".join(movie_items)
+                    <div class="movie-meta">
+                        <div class="movie-title">{title}</div>
+                        <div class="movie-year">{info["year"]}</div>
+                    </div>
+                </li>
+                """)
 
-  html = template.replace(
-      "__TEMPLATE_TITLE__",
-      f"{ACTIVE_USER_NAME}'s {config.APP_TITLE}"
-  )
-  html = html.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
+        movie_grid_html = "".join(movie_items)
 
-  with open(output_path, "w", encoding="utf-8") as f:
-    f.write(html)
+    html = html.replace("__TEMPLATE_TITLE__", config.APP_TITLE)
+    html = html.replace("__WELCOME_TITLE__", welcome_title)
+    html = html.replace("__WELCOME_SUBTITLE__", welcome_subtitle)
+    html = html.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
 
-  print(f"Website was generated successfully: {safe_name}.html")
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(html)
 
+    print(f"Website was generated successfully: {safe_name}.html")
 
 def switch_user():
     global ACTIVE_USER_ID, ACTIVE_USER_NAME

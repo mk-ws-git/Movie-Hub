@@ -1,22 +1,94 @@
 body {
-  background: #F5F5F0;
-  color: black;
-  font-family: Monaco;
+  margin: 0;
+  padding: 0;
+  background: #e1e2e6;
+  font-family: Helvetica, Arial, sans-serif;
 }
 
-.list-movies-title {
-  padding: 10px 0;
-  background: #009B50;
+.banner {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  background: #e1e2e6;
+  overflow: visible;
+  z-index: 1;
+}
+
+.banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: relative;
+}
+
+/* BLEND BANNER TO BODY */
+.banner::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  right: 0;
+
+  height: 300px;
+  bottom: -300px;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(225, 226, 230, 1) 0%,
+    rgba(225, 226, 230, 0.85) 30%,
+    rgba(244, 244, 246, 0.55) 75%,
+    rgba(244, 244, 246, 1) 100%
+  );
+
+  filter: blur(8px);
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+.banner-title {
+  position: absolute;
+  top: 40%;
+  left: 1%;
+  z-index: 2;
   color: white;
-  text-align: center;
-  font-size: 16pt;
+  font-size: 6em;
+  font-weight: 900;
+}
+
+.welcome-bar {
+  position: relative;
+  z-index: 3;
+  margin-top: 75px;
+  margin-left: 20px;
+}
+
+.welcome-title {
+  margin: 0;
+  left: 15px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: black;
+}
+
+.welcome-subtitle {
+  margin-top: 7px;
+  left: 15px;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: dimgrey;
 }
 
 /* Horizontal scrolling */
+.scroll-wrapper {
+  position: relative;
+  z-index: 4;
+  margin-top: 30px;
+}
+
 .movie-grid {
   list-style: none;
   padding: 20px;
-  margin: 0;
   display: flex;
   gap: 20px;
 
@@ -29,13 +101,8 @@ body {
 .movie-grid::-webkit-scrollbar {
   display: none;
 }
-
 .movie-grid li {
   flex: 0 0 auto;
-}
-
-.scroll-wrapper {
-  position: relative;
 }
 
 .scroll-zone {
@@ -54,47 +121,59 @@ body {
   right: 0;
 }
 
-.movie {
-  width: 140px;
-}
-
-.movie-title,
-.movie-year {
-  font-size: 0.8em;
-  text-align: center;
-}
-
-.movie-title {
-  margin-top: 10px;
-}
-
-.movie-year {
-  color: #999;
-}
-
-.movie-poster {
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    width: 128px;
-    height: 193px;
-}
-
-.movie {
+/* --- FIXED RATING BADGE POSITIONING --- */
+/* If your HTML uses <div class="movie-card"> around poster+badge, use this */
+.movie-card {
   position: relative;
+  width: 150px;
+  height: 225px;
 }
 
+/* Make poster fill the wrapper so badge aligns correctly */
+.movie-poster {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  object-fit: cover;
+  display: block;
+
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.18),
+    0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Badge sits INSIDE the poster area (won’t get clipped) */
 .rating-badge {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
 
   padding: 6px 10px;
   border-radius: 999px;
 
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
 
-  background: rgba(0, 0, 0);
+  background: rgba(0, 0, 0, 0.75);
   color: white;
+
+  pointer-events: none;
+}
+
+/* Keep meta text below; no background box */
+.movie-title {
+  margin-top: 10px;
+  font-size: 0.85em;
+  text-align: center;
+  color: #2b2b2b;
+}
+
+.movie-year {
+  font-size: 0.75em;
+  text-align: center;
+  color: #777;
 }
 
 .empty-state {
