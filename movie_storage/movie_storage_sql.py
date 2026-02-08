@@ -12,10 +12,8 @@ if not api_key:
 # Create the engine
 engine = create_engine(DB_URL, echo=True)
 
-# Create the movies db
 def _init_db():
     with engine.connect() as connection:
-        # Users table
         connection.execute(text("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,20 +21,27 @@ def _init_db():
             )
         """))
 
-        # Movies table (user_id included)
         connection.execute(text("""
             CREATE TABLE IF NOT EXISTS movies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 title TEXT NOT NULL,
-                year INTEGER NOT NULL,
+                year INTEGER,
                 rating REAL NOT NULL,
                 poster_url TEXT,
                 UNIQUE(user_id, title),
-                FOREIGN KEY(user_id) REFERENCES users(id)
+                FOREIGN KEY (user_id) REFERENCES users(id)
             )
         """))
         connection.commit()
+
+        # --- migrations (add columns if missing) ---
+        cols = connection.execute(text("PRAGMA table_info(movies)")).fetchall()
+        col_names = {c[1] for c in cols}
+
+        if "imdb_id" not in col_names:
+            connection.execute(text("ALTER TABLE movies ADD COLUMN imdb_id TEXT"))
+            connection.commit()
 
 _init_db()
 
@@ -64,13 +69,14 @@ def _fetch_from_omdb(title: str) -> dict:
     api_title = data.get("Title", "").strip()
     year_str = str(data.get("Year", "")).strip()
     poster_url = data.get("Poster", None)
-    imdb_rating_str = str(data.get("imdbRating", "")).strip()
+    imdb_rating = str(data.get("imdbRating") or "").strip()
+    imdb_id = data.get("imdbID")
 
     if not api_title or not year_str:
         raise ValueError("OMDb returned incomplete data")
 
     year = int(year_str[:4])
-    rating = float(imdb_rating_str) if imdb_rating_str != "N/A" else 0.0
+    rating = float(imdb_rating) if imdb_rating and imdb_rating != "N/A" else 0.0
 
     if poster_url == "N/A":
         poster_url = None
@@ -79,8 +85,33 @@ def _fetch_from_omdb(title: str) -> dict:
         "title": api_title,
         "year": year,
         "rating": rating,
-        "poster_url": poster_url
+        "poster_url": poster_url,
+        "imdb_id": imdb_id
     }
+
+def backfill_imdb_ids(user_id: int):
+    """Fill imdb_id for existing movies that are missing it."""
+    with engine.connect() as connection:
+        rows = connection.execute(text("""
+            SELECT title
+            FROM movies
+            WHERE user_id = :user_id AND (imdb_id IS NULL OR imdb_id = '')
+        """), {"user_id": user_id}).fetchall()
+
+    for (title,) in rows:
+        info = _fetch_from_omdb(title)
+        with engine.connect() as connection:
+            connection.execute(text("""
+                UPDATE movies
+                SET imdb_id = :imdb_id
+                WHERE user_id = :user_id AND title = :title
+            """), {
+                "imdb_id": info["imdb_id"],
+                "user_id": user_id,
+                "title": title,
+            })
+            connection.commit()
+
 
 def list_users():
     """Return all users as a list of dicts: [{'id': 1, 'name': 'Sara'}, ...]."""
@@ -118,16 +149,34 @@ def create_user(name: str) -> int:
 def list_movies(user_id: int):
     """Retrieve all movies for a specific user."""
     with engine.connect() as connection:
-        rows = connection.execute(
+        result = connection.execute(
             text("""
-                SELECT title, year, rating, poster_url
+                SELECT title, year, rating, poster_url, imdb_id
                 FROM movies
-                WHERE user_id = :uid
+                WHERE user_id = :user_id
             """),
-            {"uid": user_id}
-        ).fetchall()
+            {"user_id": user_id}
+        )
 
-    return {r[0]: {"year": r[1], "rating": r[2], "poster_url": r[3]} for r in rows}
+        rows = result.fetchall()
+
+    movies = {}
+
+    for row in rows:
+        title = row[0]
+        year = row[1]
+        rating = row[2]
+        poster_url = row[3]
+        imdb_id = row[4]
+
+        movies[title] = {
+            "year": year,
+            "rating": rating,
+            "poster_url": poster_url,
+            "imdb_id": imdb_id,
+        }
+
+    return movies
 
 
 def add_movie(user_id, title):
@@ -137,8 +186,8 @@ def add_movie(user_id, title):
         try:
             connection.execute(
                 text("""
-                    INSERT INTO movies (user_id, title, year, rating, poster_url)
-                    VALUES (:user_id, :title, :year, :rating, :poster_url)
+                    INSERT INTO movies (user_id, title, year, rating, poster_url, imdb_id)
+                    VALUES (:user_id, :title, :year, :rating, :poster_url, :imdb_id)
                 """),
                 {
                     "user_id": user_id,
@@ -146,6 +195,7 @@ def add_movie(user_id, title):
                     "year": info["year"],
                     "rating": info["rating"],
                     "poster_url": info["poster_url"],
+                    "imdb_id": info["imdb_id"],
                 }
             )
             connection.commit()

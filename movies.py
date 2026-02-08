@@ -63,15 +63,19 @@ def exit_app():
 
 
 def list_movies():
-    """Print all movies in the database along with their ratings and year."""
+    """Display all movies for the active user."""
     movies = storage.list_movies(ACTIVE_USER_ID)
+
     if not movies:
-        print(f"{ACTIVE_USER_NAME}, your movie collection is empty.")
+        print(f"\n{ACTIVE_USER_NAME}, your movie collection is empty.\n")
         return
 
-    print(f"\n{len(movies)} movies in total:\n")
+    print(f"\n{ACTIVE_USER_NAME}'s Movies ({len(movies)} total):\n")
+
     for title, info in movies.items():
-        print(f"{title}: {info['rating']} ({info['year']})")
+        year = info.get("year", "N/A")
+        rating = info.get("rating", "N/A")
+        print(f"- {title} ({year}) — Rating: {rating}")
 
 
 def add_movie():
@@ -344,15 +348,20 @@ def generate_website():
       )
   else:
       for title, info in movies.items():
-          rating = f"{info.get('rating', 0):.1f}"
           year = info.get("year", "")
           poster_url = info.get("poster_url") or ""
+          rating = info.get("rating", 0.0)
+
+          imdb_id = info.get("imdb_id")
+          imdb_url = f"https://www.imdb.com/title/{imdb_id}/" if imdb_id else "#"
 
           movie_items.append(
               "        <li>\n"
               '            <div class="movie">\n'
-              f'                <div class="rating-badge">{rating}</div>\n'
-              f'                <img class="movie-poster" src="{poster_url}"/>\n'
+              f'                <div class="rating-badge">{rating:.1f}</div>\n'
+              f'                <a href="{imdb_url}" target="_blank" rel="noopener noreferrer">\n'
+              f'                    <img class="movie-poster" src="{poster_url}" alt="{title} poster"/>\n'
+              "                </a>\n"
               f'                <div class="movie-title">{title}</div>\n'
               f'                <div class="movie-year">{year}</div>\n'
               "            </div>\n"
